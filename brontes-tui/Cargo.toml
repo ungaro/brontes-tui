@@ -5,4 +5,98 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+
+
 [dependencies]
+crossterm = { version = "0.27", optional = true }
+
+serde = { version = "1", optional = true, features = ["derive"] }
+bitflags = "2.3"
+cassowary = "0.3"
+indoc = "2.0"
+itertools = "0.12"
+paste = "1.0.2"
+strum = { version = "0.25", features = ["derive"] }
+time = { version = "0.3.11", optional = true, features = ["local-offset"] }
+unicode-segmentation = "1.10"
+unicode-width = "0.1"
+document-features = { version = "0.2.7", optional = true }
+lru = "0.12.0"
+stability = "0.1.1"
+compact_str = "0.7.1"
+ratatui = "0.25.0"
+rand = "0.8.5"
+argh = "0.1.12"
+anyhow = "1.0.71"
+palette = "0.7.3"
+better-panic = "0.3.0"
+
+[dev-dependencies]
+anyhow = "1.0.71"
+argh = "0.1.12"
+better-panic = "0.3.0"
+cargo-husky = { version = "1.5.0", default-features = false, features = [
+  "user-hooks",
+] }
+color-eyre = "0.6.2"
+criterion = { version = "0.5.1", features = ["html_reports"] }
+derive_builder = "0.12.0"
+fakeit = "1.1"
+font8x8 = "0.3.1"
+palette = "0.7.3"
+pretty_assertions = "1.4.0"
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+rstest = "0.18.2"
+serde_json = "1.0.109"
+
+
+[features]
+#! The crate provides a set of optional features that can be enabled in your `cargo.toml` file.
+#!
+## By default, we enable the crossterm backend as this is a reasonable choice for most applications
+## as it is supported on Linux/Mac/Windows systems. We also enable the `underline-color` feature
+## which allows you to set the underline color of text.
+default = ["crossterm", "underline-color"]
+#! Generally an application will only use one backend, so you should only enable one of the following features:
+## enables the [`CrosstermBackend`] backend and adds a dependency on the [Crossterm crate].
+crossterm = ["dep:crossterm"]
+## enables the [`TermionBackend`] backend and adds a dependency on the [Termion crate].
+
+
+#! The following optional features are available for all backends:
+## enables serialization and deserialization of style and color types using the [Serde crate].
+## This is useful if you want to save themes to a file.
+serde = ["dep:serde", "bitflags/serde"]
+
+## enables the [`border!`] macro.
+macros = []
+
+## enables all widgets.
+all-widgets = ["widget-calendar"]
+
+#! Widgets that add dependencies are gated behind feature flags to prevent unused transitive
+#! dependencies. The available features are:
+## enables the [`calendar`] widget module and adds a dependency on the [Time crate].
+widget-calendar = ["dep:time"]
+
+#! Underline color is only supported by the [`CrosstermBackend`] backend, and is not supported
+#! on Windows 7.
+## enables the backend code that sets the underline color.
+underline-color = ["dep:crossterm"]
+
+#! The following features are unstable and may change in the future:
+
+## Enable all unstable features.
+unstable = ["unstable-segment-size", "unstable-rendered-line-info"]
+
+## Enables the [`Layout::segment_size`](crate::layout::Layout::segment_size) method which is experimental and may change in the
+## future. See [Issue #536](https://github.com/ratatui-org/ratatui/issues/536) for more details.
+unstable-segment-size = []
+
+## Enables the [`Paragraph::line_count`](crate::widgets::Paragraph::line_count)
+## [`Paragraph::line_width`](crate::widgets::Paragraph::line_width) methods
+## which are experimental and may change in the future.
+## See [Issue 293](https://github.com/ratatui-org/ratatui/issues/293) for more details.
+unstable-rendered-line-info = []

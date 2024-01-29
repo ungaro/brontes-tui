@@ -4,22 +4,18 @@ use ratatui::{
     widgets::{canvas::*, *},
 };
 
-use crate::{RgbSwatch, THEME};
+use crate::{layout, RgbSwatch, THEME};
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct TracerouteTab {
-    row_index: usize,
+    selected_row: usize,
 }
 
 impl TracerouteTab {
-    /// Select the previous row (with wrap around).
-    pub fn prev_row(&mut self) {
-        self.row_index = self.row_index.saturating_add(HOPS.len() - 1) % HOPS.len();
-    }
-
-    /// Select the next row (with wrap around).
-    pub fn next_row(&mut self) {
-        self.row_index = self.row_index.saturating_add(1) % HOPS.len();
+    pub fn new(selected_row: usize) -> Self {
+        Self {
+            selected_row: selected_row % HOPS.len(),
+        }
     }
 }
 
@@ -32,14 +28,14 @@ impl Widget for TracerouteTab {
         });
         Clear.render(area, buf);
         Block::new().style(THEME.content).render(area, buf);
-        let horizontal = Layout::horizontal([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)]);
-        let vertical = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]);
-        let [left, map] = area.split(&horizontal);
-        let [hops, pings] = left.split(&vertical);
-
-        render_hops(self.row_index, hops, buf);
-        render_ping(self.row_index, pings, buf);
-        render_map(self.row_index, map, buf);
+        let area = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)])
+            .split(area);
+        let left_area = layout(area[0], Direction::Vertical, vec![0, 3]);
+        render_hops(self.selected_row, left_area[0], buf);
+        render_ping(self.selected_row, left_area[1], buf);
+        render_map(self.selected_row, area[1], buf);
     }
 }
 

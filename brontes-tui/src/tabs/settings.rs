@@ -85,11 +85,11 @@ const INGREDIENTS: &[Ingredient] = &[
 ];
 
 #[derive(Debug)]
-pub struct RecipeTab {
+pub struct SettingsTab {
     selected_row: usize,
 }
 
-impl RecipeTab {
+impl SettingsTab {
     pub fn new(selected_row: usize) -> Self {
         Self {
             selected_row: selected_row % INGREDIENTS.len(),
@@ -97,7 +97,7 @@ impl RecipeTab {
     }
 }
 
-impl Widget for RecipeTab {
+impl Widget for SettingsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
         RgbSwatch.render(area, buf);
         let area = area.inner(&Margin {

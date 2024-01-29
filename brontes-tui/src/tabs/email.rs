@@ -2,7 +2,7 @@ use itertools::Itertools;
 use ratatui::{prelude::*, widgets::*};
 use unicode_width::UnicodeWidthStr;
 
-use crate::{RgbSwatch, THEME};
+use crate::{layout, RgbSwatch, THEME};
 
 #[derive(Debug, Default)]
 pub struct Email {
@@ -39,20 +39,16 @@ const EMAILS: &[Email] = &[
     },
 ];
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Default)]
 pub struct EmailTab {
-    row_index: usize,
+    selected_index: usize,
 }
 
 impl EmailTab {
-    /// Select the previous email (with wrap around).
-    pub fn prev(&mut self) {
-        self.row_index = self.row_index.saturating_add(EMAILS.len() - 1) % EMAILS.len();
-    }
-
-    /// Select the next email (with wrap around).
-    pub fn next(&mut self) {
-        self.row_index = self.row_index.saturating_add(1) % EMAILS.len();
+    pub fn new(selected_index: usize) -> Self {
+        Self {
+            selected_index: selected_index % EMAILS.len(),
+        }
     }
 }
 
@@ -64,22 +60,20 @@ impl Widget for EmailTab {
             horizontal: 2,
         });
         Clear.render(area, buf);
-        let vertical = Layout::vertical([Constraint::Length(5), Constraint::Min(0)]);
-        let [inbox, email] = area.split(&vertical);
-        render_inbox(self.row_index, inbox, buf);
-        render_email(self.row_index, email, buf);
+        let area = layout(area, Direction::Vertical, vec![5, 0]);
+        render_inbox(self.selected_index, area[0], buf);
+        render_email(self.selected_index, area[1], buf);
     }
 }
 fn render_inbox(selected_index: usize, area: Rect, buf: &mut Buffer) {
-    let vertical = Layout::vertical([Constraint::Length(1), Constraint::Min(0)]);
-    let [tabs, inbox] = area.split(&vertical);
+    let area = layout(area, Direction::Vertical, vec![1, 0]);
     let theme = THEME.email;
     Tabs::new(vec![" Inbox ", " Sent ", " Drafts "])
         .style(theme.tabs)
         .highlight_style(theme.tabs_selected)
         .select(0)
         .divider("")
-        .render(tabs, buf);
+        .render(area[0], buf);
 
     let highlight_symbol = ">>";
     let from_width = EMAILS
@@ -100,7 +94,7 @@ fn render_inbox(selected_index: usize, area: Rect, buf: &mut Buffer) {
             .style(theme.inbox)
             .highlight_style(theme.selected_item)
             .highlight_symbol(highlight_symbol),
-        inbox,
+        area[1],
         buf,
         &mut state,
     );
@@ -112,7 +106,7 @@ fn render_inbox(selected_index: usize, area: Rect, buf: &mut Buffer) {
         .end_symbol(None)
         .track_symbol(None)
         .thumb_symbol("▐")
-        .render(inbox, buf, &mut scrollbar_state);
+        .render(area[1], buf, &mut scrollbar_state);
 }
 
 fn render_email(selected_index: usize, area: Rect, buf: &mut Buffer) {
@@ -126,8 +120,7 @@ fn render_email(selected_index: usize, area: Rect, buf: &mut Buffer) {
     let inner = block.inner(area);
     block.render(area, buf);
     if let Some(email) = email {
-        let vertical = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]);
-        let [headers_area, body_area] = inner.split(&vertical);
+        let area = layout(inner, Direction::Vertical, vec![3, 0]);
         let headers = vec![
             Line::from(vec![
                 "From: ".set_style(theme.header),
@@ -141,11 +134,9 @@ fn render_email(selected_index: usize, area: Rect, buf: &mut Buffer) {
         ];
         Paragraph::new(headers)
             .style(theme.body)
-            .render(headers_area, buf);
+            .render(area[0], buf);
         let body = email.body.lines().map(Line::from).collect_vec();
-        Paragraph::new(body)
-            .style(theme.body)
-            .render(body_area, buf);
+        Paragraph::new(body).style(theme.body).render(area[1], buf);
     } else {
         Paragraph::new("No email selected").render(inner, buf);
     }
