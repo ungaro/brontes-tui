@@ -27,10 +27,10 @@ impl Widget for Root<'_> {
 
 impl Root<'_> {
     fn render_title_bar(&self, area: Rect, buf: &mut Buffer) {
-        let area = layout(area, Direction::Horizontal, vec![0, 45]);
+        let area = layout(area, Direction::Horizontal, vec![0, 58]);
 
         Paragraph::new(Span::styled("Brontes", THEME.app_title)).render(area[0], buf);
-        let titles = vec!["", " Recipe ", " Email ", " Traceroute "];
+        let titles = vec!["DASHBOARD", " LIVESTREAM ", " PROTOCOLS ", " TOKENS ", " SETTINGS "];
         Tabs::new(titles)
             .style(THEME.tabs)
             .highlight_style(THEME.tabs_selected)
@@ -42,7 +42,7 @@ impl Root<'_> {
     fn render_selected_tab(&self, area: Rect, buf: &mut Buffer) {
         let row_index = self.context.row_index;
         match self.context.tab_index {
-            0 => AboutTab::new(row_index).render(area, buf),
+            0 => DashboardTab::new(row_index).render(area, buf),
             1 => RecipeTab::new(row_index).render(area, buf),
             2 => EmailTab::new(row_index).render(area, buf),
             3 => TracerouteTab::new(row_index).render(area, buf),

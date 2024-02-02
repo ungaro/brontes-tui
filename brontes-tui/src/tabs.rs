@@ -4,7 +4,9 @@ mod recipe;
 mod traceroute;
 mod settings;
 mod notifications;
+mod dashboard;
 
+pub use dashboard::DashboardTab;
 pub use about::AboutTab;
 pub use email::EmailTab;
 pub use recipe::RecipeTab;

@@ -62,7 +62,7 @@ impl App {
         }
 
         let context = &mut self.context;
-        const TAB_COUNT: usize = 6;
+        const TAB_COUNT: usize = 5;
         match key.code {
             KeyCode::Char('q') | KeyCode::Esc => {
                 self.should_quit = true;
