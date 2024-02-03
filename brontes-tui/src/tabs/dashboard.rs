@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use lazy_static::lazy_static;
 
 use itertools::Itertools;
@@ -103,11 +105,14 @@ const RATATUI_LOGO: [&str; 32] = [
     "  █xxxxxxxxxxxxxxxxxxxxx█ █     ",
 ];
 
-
 pub struct DashboardTab {
     selected_row: usize,
     data: Vec<(&'static str, u64)>,
     log_scroll: u16,
+    items: Vec<Vec<&'static str>>,
+    stream_table_state: TableState,
+    //leaderboard: Vec<Vec<&'static str>>,
+    leaderboard: Vec<(&'static str, u64)>,
 
     //    events: Vec<(&'static str, &'static str,)>,
     events: Vec<(
@@ -133,7 +138,130 @@ impl DashboardTab {
                 ("Atomic Backrun", 2),
                 ("Liquidation", 4),
             ],
-            
+            stream_table_state: TableState::default(),
+            items: vec![
+                vec![
+                    "19150733",
+                    "4 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "10 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "24 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "32 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "33 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "44 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "54 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "64 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "78 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "80 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+                vec![
+                    "19150733",
+                    "90 mins ago",
+                    "Sandwich",
+                    "WETH/UNCL",
+                    "0x2823784...2344",
+                    "0x2823784...2344",
+                    "$10",
+                    "$20",
+                ],
+            ],
+            leaderboard: vec![
+                ("jaredfromsubway.eth", 1_200_000),
+                ("0x23892382394..212", 1_100_000),
+                ("0x13897682394..243", 1_000_000),
+                ("0x33899882394..223", 900_000),
+                ("0x43894082394..265", 800_000),
+                ("0x53894082394..283", 700_000),
+                ("0x83894082394..293", 600_000),
+                // Repeat as necessary
+            ],
+
             events: vec![
                 ("Atomic Backrun", "#123456789", "ETHIB/WETH", "$4", "$20"),
                 ("Sandwich", "#123456789", "ETHIB/WETH", "$4", "$20"),
@@ -142,20 +270,44 @@ impl DashboardTab {
                 ("Cex-Dex", "#123456789", "ETHIB/WETH", "$4", "$20"),
                 ("Liquidation", "#123456789", "ETHIB/WETH", "$4", "$20"),
             ],
-
         }
+    }
+    pub fn next(&mut self) {
+        let i = match self.stream_table_state.selected() {
+            Some(i) => {
+                if i >= self.items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.stream_table_state.select(Some(i));
+    }
+
+    pub fn previous(&mut self) {
+        let i = match self.stream_table_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.stream_table_state.select(Some(i));
     }
 
     fn on_tick(&mut self) {
         self.log_scroll += 1;
         self.log_scroll %= 10;
     }
-
-
 }
 
 impl Widget for DashboardTab {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let area = area.inner(&Margin {
             vertical: 1,
             horizontal: 4,
@@ -168,30 +320,80 @@ impl Widget for DashboardTab {
                 Constraint::Length(7),
             ])
             .split(area);
-        draw_charts(&self, chunks[0], buf);
-        draw_events(&self, chunks[1], buf, 1);
-        draw_logs(&self, chunks[2], buf, 1);
 
-   
+        let sub_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(chunks[0]);
+
+        draw_charts(&self, sub_layout[0], buf);
+        draw_leaderboard(&self, sub_layout[1], buf);
+        //draw_events(&self, chunks[1], buf, 1);
+        draw_livestream(&mut self, chunks[1], buf);
+
+        draw_logs(&self, chunks[2], buf, 1);
     }
 }
 
-    fn draw_logs(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
+//fn draw_livestream(f: &mut Frame, app: &mut App) {
 
+fn draw_livestream(widget: &mut DashboardTab, area: Rect, buf: &mut Buffer) {
+    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
+    let normal_style = Style::default().bg(Color::DarkGray);
+    let header_cells = [
+        "Block#", "Time", "MEV Type", "Tokens", "From", "Contract", "Profit", "Cost",
+    ]
+    .iter()
+    .map(|h| Cell::from(*h).style(Style::default().fg(Color::White)));
+    let header = Row::new(header_cells)
+        .style(normal_style)
+        .height(1)
+        .bottom_margin(1);
+    let rows = widget.items.iter().map(|item| {
+        let height = item
+            .iter()
+            .map(|content| content.chars().filter(|c| *c == '\n').count())
+            .max()
+            .unwrap_or(0)
+            + 1;
+        let cells = item.iter().map(|c| Cell::from(*c));
+        Row::new(cells).height(height as u16).bottom_margin(1)
+    });
+    let t = Table::new(
+        rows,
+        [
+            Constraint::Max(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+            Constraint::Min(10),
+        ],
+    )
+    .header(header)
+    .block(Block::default().borders(Borders::ALL).title("Live Stream"))
+    .highlight_style(selected_style)
+    .highlight_symbol(">> ");
+    //t.render(area, buf, selected_row);
+    //f.render_stateful_widget(t, rects[0], &mut app.state);
+    ratatui::widgets::StatefulWidget::render(t, area, buf, &mut widget.stream_table_state);
+}
 
+fn draw_logs(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
+    let area_width = area.width;
 
-        let area_width = area.width;
+    let s = "Veeeeeeeeeeeeeeeery    loooooooooooooooooong   striiiiiiiiiiiiiiiiiiiiiiiiiing.   ";
 
-        let s = "Veeeeeeeeeeeeeeeery    loooooooooooooooooong   striiiiiiiiiiiiiiiiiiiiiiiiiing.   ";
+    let mut long_line = s.repeat(usize::from(area_width) / s.len() + 4);
+    long_line.push('\n');
 
-        let mut long_line = s.repeat(usize::from(area_width) / s.len() + 4);
-        long_line.push('\n');
-
-        let text = vec![
-            Line::from("This is a line "),
-            Line::from("This is a line   ".red()),
-            Line::from("This is a line".on_blue()),
-            Line::from("This is a longer line".crossed_out()),
+    let text = vec![
+            Line::from("2024-01-31T08:28:19.741687Z  INFO brontes: Collected dex prices for block: 18804995"),
+            Line::from("2024-01-31T08:28:19.741702Z  INFO brontes: dex pricing finished".green()),
+            Line::from("2024-01-31T08:28:19.836077Z DEBUG brontes_inspect::cex_dex: No CEX quote found for pair: symbol: IXS, symbol: WETH at exchange: Kucoin".red()),
+            Line::from("2024-01-31T08:28:19.835551Z  INFO brontes: Collected dex prices for block: 18804997"),
             Line::from(long_line.on_green()),
             Line::from("This is a line".green().italic()),
             Line::from(vec![
@@ -203,29 +405,25 @@ impl Widget for DashboardTab {
             ]),
         ];
 
-
-        let create_block = |title| {
-            Block::default()
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::Gray))
-                .title(Span::styled(
-                    title,
-                    Style::default().add_modifier(Modifier::BOLD),
-                ))
-        };
+    let create_block = |title| {
+        Block::default()
+            .borders(Borders::ALL)
+            .style(Style::default().fg(Color::Gray))
+            .title(Span::styled(
+                title,
+                Style::default().add_modifier(Modifier::BOLD),
+            ))
+    };
 
     let paragraph = Paragraph::new(text)
         .style(Style::default().fg(Color::Gray))
         .block(create_block("LOGS"))
-        .alignment(Alignment::Center)
+        .alignment(Alignment::Left)
         .wrap(Wrap { trim: true })
         .scroll((widget.log_scroll, 0));
-paragraph.render(area, buf);
-
-    //f.render_widget(paragraph, chunks[3]);
+    paragraph.render(area, buf);
 
 }
-
 
 fn draw_events(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
     let mut state = ListState::default().with_selected(Some(selected_row));
@@ -281,15 +479,6 @@ fn draw_events(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row
 }
 
 fn draw_charts(widget: &DashboardTab, area: Rect, buf: &mut Buffer) {
-    //fn draw_charts(f: &mut Frame, area: Rect) {
-    /*
-        let constraints = if app.show_chart {
-            vec![Constraint::Percentage(50), Constraint::Percentage(50)]
-        } else {
-            vec![Constraint::Percentage(100)]
-        };
-    */
-
     let barchart = BarChart::default()
         .block(
             Block::default()
@@ -310,8 +499,26 @@ fn draw_charts(widget: &DashboardTab, area: Rect, buf: &mut Buffer) {
         .label_style(Style::default().fg(Color::Yellow))
         .bar_style(Style::default().fg(Color::Green));
     barchart.render(area, buf);
+}
 
-  
+fn draw_leaderboard(widget: &DashboardTab, area: Rect, buf: &mut Buffer) {
+    let barchart = BarChart::default()
+        .block(Block::default().borders(Borders::ALL).title("Leaderboard"))
+        //.data(&widget.leaderboard.iter().map(|x| (x[0], x[1].parse().unwrap())).collect::<Vec<_>>())
+        .data(&widget.leaderboard)
+        .bar_width(1)
+        .bar_gap(0)
+        .bar_set(symbols::bar::NINE_LEVELS)
+        .value_style(
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Green)
+                .add_modifier(Modifier::ITALIC),
+        )
+        .direction(Direction::Horizontal)
+        .label_style(Style::default().fg(Color::Yellow))
+        .bar_style(Style::default().fg(Color::Green));
+    barchart.render(area, buf);
 }
 
 fn render_crate_description(area: Rect, buf: &mut Buffer) {
