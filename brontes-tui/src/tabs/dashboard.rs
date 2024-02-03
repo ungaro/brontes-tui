@@ -1,18 +1,14 @@
 use lazy_static::lazy_static;
 
-
 use itertools::Itertools;
 
 use ratatui::{
     prelude::*,
+    text::Line,
     widgets::{canvas::*, *},
 };
 
-
-
 use crate::{layout, RgbSwatch, THEME};
-
-
 
 const LOGS: [(&str, &str); 26] = [
     ("Event1", "INFO"),
@@ -45,13 +41,32 @@ const LOGS: [(&str, &str); 26] = [
 
 lazy_static! {
     static ref BARCHART_DATA: Vec<(&'static str, u64)> = vec![
-        ("B1", 9), ("B2", 12), ("B3", 5), ("B4", 8), ("B5", 2), ("B6", 4), ("B7", 5),
-        ("B8", 9), ("B9", 14), ("B10", 15), ("B11", 1), ("B12", 0), ("B13", 4), ("B14", 6),
-        ("B15", 4), ("B16", 6), ("B17", 4), ("B18", 7), ("B19", 13), ("B20", 8), ("B21", 11),
-        ("B22", 9), ("B23", 3), ("B24", 5),
+        ("B1", 9),
+        ("B2", 12),
+        ("B3", 5),
+        ("B4", 8),
+        ("B5", 2),
+        ("B6", 4),
+        ("B7", 5),
+        ("B8", 9),
+        ("B9", 14),
+        ("B10", 15),
+        ("B11", 1),
+        ("B12", 0),
+        ("B13", 4),
+        ("B14", 6),
+        ("B15", 4),
+        ("B16", 6),
+        ("B17", 4),
+        ("B18", 7),
+        ("B19", 13),
+        ("B20", 8),
+        ("B21", 11),
+        ("B22", 9),
+        ("B23", 3),
+        ("B24", 5),
     ];
 }
-
 
 const RATATUI_LOGO: [&str; 32] = [
     "               ███              ",
@@ -88,276 +103,216 @@ const RATATUI_LOGO: [&str; 32] = [
     "  █xxxxxxxxxxxxxxxxxxxxx█ █     ",
 ];
 
-/*
-    performance: vec![
-        ("B1", 9),
-        ("B2", 12),
-        ("B3", 5),
-        ("B4", 8),
-        ("B5", 2),
-        ("B6", 4),
-        ("B7", 5),
-        ("B8", 9),
-        ("B9", 14),
-        ("B10", 15),
-        ("B11", 1),
-        ("B12", 0),
-        ("B13", 4),
-        ("B14", 6),
-        ("B15", 4),
-        ("B16", 6),
-        ("B17", 4),
-        ("B18", 7),
-        ("B19", 13),
-        ("B20", 8),
-        ("B21", 11),
-        ("B22", 9),
-        ("B23", 3),
-        ("B24", 5),
-    ],
-    */
+
 pub struct DashboardTab {
     selected_row: usize,
     data: Vec<(&'static str, u64)>,
+    log_scroll: u16,
+
+    //    events: Vec<(&'static str, &'static str,)>,
+    events: Vec<(
+        &'static str,
+        &'static str,
+        &'static str,
+        &'static str,
+        &'static str,
+    )>,
     //pub barchart: Vec<(&'a str, u64)>,
-
-
 }
 
 impl DashboardTab {
     pub fn new(selected_row: usize) -> Self {
-        Self { selected_row,
+        Self {
+            selected_row,
+            log_scroll: 0,
             data: vec![
-                ("B1", 9),
-                ("B2", 12),
-                ("B3", 5),
-                ("B4", 8),
-                ("B5", 2),
-                ("B6", 4),
-                ("B7", 5),
-                ("B8", 9),
-                ("B9", 14),
-                ("B10", 15),
-                ("B11", 1),
-                ("B12", 0),
-                ("B13", 4),
-                ("B14", 6),
-                ("B15", 4),
-                ("B16", 6),
-                ("B17", 4),
-                ("B18", 7),
-                ("B19", 13),
-                ("B20", 8),
-                ("B21", 11),
-                ("B22", 9),
-                ("B23", 3),
-                ("B24", 5),
-            ], }
+                ("Sandwich", 9),
+                ("Jit Sandwich", 8),
+                ("Cex-Dex", 12),
+                ("Jit", 5),
+                ("Atomic Backrun", 2),
+                ("Liquidation", 4),
+            ],
+            
+            events: vec![
+                ("Atomic Backrun", "#123456789", "ETHIB/WETH", "$4", "$20"),
+                ("Sandwich", "#123456789", "ETHIB/WETH", "$4", "$20"),
+                ("Jit Sandwich", "#123456789", "ETHIB/WETH", "$4", "$20"),
+                ("Jit", "#123456789", "ETHIB/WETH", "$4", "$20"),
+                ("Cex-Dex", "#123456789", "ETHIB/WETH", "$4", "$20"),
+                ("Liquidation", "#123456789", "ETHIB/WETH", "$4", "$20"),
+            ],
+
+        }
     }
+
+    fn on_tick(&mut self) {
+        self.log_scroll += 1;
+        self.log_scroll %= 10;
+    }
+
+
 }
 
 impl Widget for DashboardTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-
         let area = area.inner(&Margin {
             vertical: 1,
             horizontal: 4,
         });
 
-
         let chunks = Layout::default()
-        .constraints([
-            Constraint::Length(9),
-            Constraint::Min(8),
-            Constraint::Length(7),
-        ])
-        .split(area);
-    draw_charts(self, area, buf);
+            .constraints([
+                Constraint::Length(9),
+                Constraint::Min(8),
+                Constraint::Length(7),
+            ])
+            .split(area);
+        draw_charts(&self, chunks[0], buf);
+        draw_events(&self, chunks[1], buf, 1);
+        draw_logs(&self, chunks[2], buf, 1);
 
-        /*
-        RgbSwatch.render(area, buf);
-        let area = layout(area, Direction::Horizontal, vec![34, 0]);
-        render_crate_description(area[1], buf);
-        render_logo(self.selected_row, area[0], buf);
-
-        */
+   
     }
 }
 
-fn draw_charts(widget: DashboardTab, area: Rect, buf: &mut Buffer) {
+    fn draw_logs(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
 
-//fn draw_charts(f: &mut Frame, area: Rect) {
+
+
+        let area_width = area.width;
+
+        let s = "Veeeeeeeeeeeeeeeery    loooooooooooooooooong   striiiiiiiiiiiiiiiiiiiiiiiiiing.   ";
+
+        let mut long_line = s.repeat(usize::from(area_width) / s.len() + 4);
+        long_line.push('\n');
+
+        let text = vec![
+            Line::from("This is a line "),
+            Line::from("This is a line   ".red()),
+            Line::from("This is a line".on_blue()),
+            Line::from("This is a longer line".crossed_out()),
+            Line::from(long_line.on_green()),
+            Line::from("This is a line".green().italic()),
+            Line::from(vec![
+                "Masked text: ".into(),
+                Span::styled(
+                    Masked::new("password", '*'),
+                    Style::default().fg(Color::Red),
+                ),
+            ]),
+        ];
+
+
+        let create_block = |title| {
+            Block::default()
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::Gray))
+                .title(Span::styled(
+                    title,
+                    Style::default().add_modifier(Modifier::BOLD),
+                ))
+        };
+
+    let paragraph = Paragraph::new(text)
+        .style(Style::default().fg(Color::Gray))
+        .block(create_block("LOGS"))
+        .alignment(Alignment::Center)
+        .wrap(Wrap { trim: true })
+        .scroll((widget.log_scroll, 0));
+paragraph.render(area, buf);
+
+    //f.render_widget(paragraph, chunks[3]);
+
+}
+
+
+fn draw_events(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
+    let mut state = ListState::default().with_selected(Some(selected_row));
+
+    let events: Vec<ListItem> = widget
+        .events
+        .iter()
+        .rev()
+        .map(|&(event, blocknumber, tokens, profit, cost)| {
+            // Colorcode the level depending on its type
+            let s = match event {
+                "Atomic Backrun" => Style::default().fg(Color::Red),
+                "ERROR" => Style::default().fg(Color::Magenta),
+                "WARNING" => Style::default().fg(Color::Yellow),
+                "INFO" => Style::default().fg(Color::Blue),
+                _ => Style::default(),
+            };
+
+            // Add a example datetime and apply proper spacing between them
+            let header = Line::from(vec![
+                Span::styled(format!("{tokens:<9}"), s),
+                " ".into(),
+                "2020-01-01 10:00:00".italic(),
+            ]);
+
+            // The event gets its own line
+            let log = Line::from(vec![event.into()]);
+
+            // Here several things happen:
+            // 1. Add a `---` spacing line above the final list entry
+            // 2. Add the Level + datetime
+            // 3. Add a spacer line
+            // 4. Add the actual event
+            ListItem::new(vec![
+                Line::from("-".repeat(area.width as usize)),
+                header,
+                Line::from(""),
+                log,
+            ])
+        })
+        .collect();
+    let events_list = List::new(events)
+        .block(Block::default().borders(Borders::ALL).title("Live Stream"))
+        .direction(ListDirection::BottomToTop);
+
+    ratatui::widgets::StatefulWidget::render(events_list, area, buf, &mut state);
+    //ratatui::widgets::Widget::render(events_list, area, buf, state)`
+
+    //events_list.render(area,buf,state);
+    //f.render_widget(events_list, chunks[1]);
+
+    //events_list.render(area, buf);
+}
+
+fn draw_charts(widget: &DashboardTab, area: Rect, buf: &mut Buffer) {
+    //fn draw_charts(f: &mut Frame, area: Rect) {
     /*
-    let constraints = if app.show_chart {
-        vec![Constraint::Percentage(50), Constraint::Percentage(50)]
-    } else {
-        vec![Constraint::Percentage(100)]
-    };
-*/
-
-let barchart = BarChart::default()
-.block(Block::default().borders(Borders::ALL).title("Bar chart"))
-.data(&widget.data)
-.bar_width(3)
-.bar_gap(2)
-.bar_set(
-    symbols::bar::NINE_LEVELS)
-.value_style(
-    Style::default()
-        .fg(Color::Black)
-        .bg(Color::Green)
-        .add_modifier(Modifier::ITALIC),
-)
-.label_style(Style::default().fg(Color::Yellow))
-.bar_style(Style::default().fg(Color::Green));
-barchart.render(area, buf);
-//Canvas.render_widget(barchart, chunks[1]);
-
-
-/*
-
-
-    let chunks = Layout::default()
-        .constraints(constraints)
-        .direction(Direction::Horizontal)
-        .split(area);
-    {
-        let chunks = Layout::default()
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-            .split(chunks[0]);
-        {
-            let chunks = Layout::default()
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-                .direction(Direction::Horizontal)
-                .split(chunks[0]);
-
-            // Draw tasks
-            let tasks: Vec<ListItem> = app
-                .tasks
-                .items
-                .iter()
-                .map(|i| ListItem::new(vec![text::Line::from(Span::raw(*i))]))
-                .collect();
-            let tasks = List::new(tasks)
-                .block(Block::default().borders(Borders::ALL).title("List"))
-                .highlight_style(Style::default().add_modifier(Modifier::BOLD))
-                .highlight_symbol("> ");
-            f.render_stateful_widget(tasks, chunks[0], &mut app.tasks.state);
-
-            // Draw logs
-            let info_style = Style::default().fg(Color::Blue);
-            let warning_style = Style::default().fg(Color::Yellow);
-            let error_style = Style::default().fg(Color::Magenta);
-            let critical_style = Style::default().fg(Color::Red);
-            let logs: Vec<ListItem> = app
-                .logs
-                .items
-                .iter()
-                .map(|&(evt, level)| {
-                    let s = match level {
-                        "ERROR" => error_style,
-                        "CRITICAL" => critical_style,
-                        "WARNING" => warning_style,
-                        _ => info_style,
-                    };
-                    let content = vec![text::Line::from(vec![
-                        Span::styled(format!("{level:<9}"), s),
-                        Span::raw(evt),
-                    ])];
-                    ListItem::new(content)
-                })
-                .collect();
-            let logs = List::new(logs).block(Block::default().borders(Borders::ALL).title("List"));
-            f.render_stateful_widget(logs, chunks[1], &mut app.logs.state);
-        }
-
-        let barchart = BarChart::default()
-            .block(Block::default().borders(Borders::ALL).title("Bar chart"))
-            .data(&app.barchart)
-            .bar_width(3)
-            .bar_gap(2)
-            .bar_set(if app.enhanced_graphics {
-                symbols::bar::NINE_LEVELS
-            } else {
-                symbols::bar::THREE_LEVELS
-            })
-            .value_style(
-                Style::default()
-                    .fg(Color::Black)
-                    .bg(Color::Green)
-                    .add_modifier(Modifier::ITALIC),
-            )
-            .label_style(Style::default().fg(Color::Yellow))
-            .bar_style(Style::default().fg(Color::Green));
-        f.render_widget(barchart, chunks[1]);
-    }
-    if app.show_chart {
-        let x_labels = vec![
-            Span::styled(
-                format!("{}", app.signals.window[0]),
-                Style::default().add_modifier(Modifier::BOLD),
-            ),
-            Span::raw(format!(
-                "{}",
-                (app.signals.window[0] + app.signals.window[1]) / 2.0
-            )),
-            Span::styled(
-                format!("{}", app.signals.window[1]),
-                Style::default().add_modifier(Modifier::BOLD),
-            ),
-        ];
-        let datasets = vec![
-            Dataset::default()
-                .name("data2")
-                .marker(symbols::Marker::Dot)
-                .style(Style::default().fg(Color::Cyan))
-                .data(&app.signals.sin1.points),
-            Dataset::default()
-                .name("data3")
-                .marker(if app.enhanced_graphics {
-                    symbols::Marker::Braille
-                } else {
-                    symbols::Marker::Dot
-                })
-                .style(Style::default().fg(Color::Yellow))
-                .data(&app.signals.sin2.points),
-        ];
-        let chart = Chart::new(datasets)
-            .block(
-                Block::default()
-                    .title(Span::styled(
-                        "Chart",
-                        Style::default()
-                            .fg(Color::Cyan)
-                            .add_modifier(Modifier::BOLD),
-                    ))
-                    .borders(Borders::ALL),
-            )
-            .x_axis(
-                Axis::default()
-                    .title("X Axis")
-                    .style(Style::default().fg(Color::Gray))
-                    .bounds(app.signals.window)
-                    .labels(x_labels),
-            )
-            .y_axis(
-                Axis::default()
-                    .title("Y Axis")
-                    .style(Style::default().fg(Color::Gray))
-                    .bounds([-20.0, 20.0])
-                    .labels(vec![
-                        Span::styled("-20", Style::default().add_modifier(Modifier::BOLD)),
-                        Span::raw("0"),
-                        Span::styled("20", Style::default().add_modifier(Modifier::BOLD)),
-                    ]),
-            );
-        f.render_widget(chart, chunks[1]);
-    }
-
-
+        let constraints = if app.show_chart {
+            vec![Constraint::Percentage(50), Constraint::Percentage(50)]
+        } else {
+            vec![Constraint::Percentage(100)]
+        };
     */
-}
 
+    let barchart = BarChart::default()
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Performance of MEV Types"),
+        )
+        .data(&widget.data)
+        .bar_width(1)
+        .bar_gap(0)
+        .bar_set(symbols::bar::NINE_LEVELS)
+        .value_style(
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Green)
+                .add_modifier(Modifier::ITALIC),
+        )
+        .direction(Direction::Horizontal)
+        .label_style(Style::default().fg(Color::Yellow))
+        .bar_style(Style::default().fg(Color::Green));
+    barchart.render(area, buf);
+
+  
+}
 
 fn render_crate_description(area: Rect, buf: &mut Buffer) {
     let area = area.inner(
@@ -392,8 +347,6 @@ fn render_crate_description(area: Rect, buf: &mut Buffer) {
         .scroll((0, 0))
         .render(area, buf);
 }
-
-
 
 /// Use half block characters to render a logo based on the RATATUI_LOGO const.
 ///
