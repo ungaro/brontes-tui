@@ -43,11 +43,11 @@ impl Root<'_> {
         let row_index = self.context.row_index;
         match self.context.tab_index {
             0 => DashboardTab::new(row_index).render(area, buf),
-            1 => RecipeTab::new(row_index).render(area, buf),
-            2 => EmailTab::new(row_index).render(area, buf),
-            3 => TracerouteTab::new(row_index).render(area, buf),
+            1 => LiveStreamTab::new(row_index).render(area, buf),
+            2 => ProtocolsTab::new(row_index).render(area, buf),
+            3 => TokensTab::new(row_index).render(area, buf),
             4 => SettingsTab::new(row_index).render(area, buf),
-            5 => NotificationsTab::new(row_index).render(area, buf),
+            //5 => NotificationsTab::new(row_index).render(area, buf),
 //            4 => WeatherTab::new(row_index).render(area, buf),
             _ => unreachable!(),
         };

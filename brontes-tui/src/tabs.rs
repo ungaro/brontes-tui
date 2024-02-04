@@ -1,15 +1,12 @@
-mod about;
-mod email;
-mod recipe;
-mod traceroute;
 mod settings;
-mod notifications;
 mod dashboard;
+mod livestream;
+mod protocols;
+mod tokens;
 
 pub use dashboard::DashboardTab;
-pub use about::AboutTab;
-pub use email::EmailTab;
-pub use recipe::RecipeTab;
-pub use traceroute::TracerouteTab;
+
 pub use settings::SettingsTab;
-pub use notifications::NotificationsTab;
+pub use livestream::LiveStreamTab;
+pub use protocols::ProtocolsTab;
+pub use tokens::TokensTab;
