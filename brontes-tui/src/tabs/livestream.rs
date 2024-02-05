@@ -70,41 +70,6 @@ lazy_static! {
     ];
 }
 
-const BRONTES_LOGO: [&str; 32] = [
-    "               ███              ",
-    "             ██████             ",
-    "            ███████             ",
-    "           ████████             ",
-    "          █████████             ",
-    "         ██████████             ",
-    "        ████████████            ",
-    "        █████████████           ",
-    "        █████████████     ██████",
-    "         ███████████    ████████",
-    "              █████ ███████████ ",
-    "               ███ ██ee████████ ",
-    "                █ █████████████ ",
-    "            ████ █████████████  ",
-    "           █████████████████    ",
-    "           ████████████████     ",
-    "           ████████████████     ",
-    "            ███ ██████████      ",
-    "          ██    █████████       ",
-    "         █xx█   █████████       ",
-    "        █xxxx█ ██████████       ",
-    "       █xx█xxx█ █████████       ",
-    "      █xx██xxxx█ ████████       ",
-    "     █xxxxxxxxxx█ ██████████    ",
-    "    █xxxxxxxxxxxx█ ██████████   ",
-    "   █xxxxxxx██xxxxx█ █████████   ",
-    "  █xxxxxxxxx██xxxxx█ ████  ███  ",
-    " █xxxxxxxxxxxxxxxxxx█ ██   ███  ",
-    "█xxxxxxxxxxxxxxxxxxxx█ █   ███  ",
-    "█xxxxxxxxxxxxxxxxxxxxx█   ███   ",
-    " █xxxxxxxxxxxxxxxxxxxxx█ ███    ",
-    "  █xxxxxxxxxxxxxxxxxxxxx█ █     ",
-];
-
 pub struct LiveStreamTab {
     selected_row: usize,
     data: Vec<(&'static str, u64)>,
@@ -537,69 +502,4 @@ fn render_crate_description(area: Rect, buf: &mut Buffer) {
         .wrap(Wrap { trim: true })
         .scroll((0, 0))
         .render(area, buf);
-}
-
-/// Use half block characters to render a logo based on the BRONTES_LOGO const.
-///
-/// The logo is rendered in three colors, one for the rat, one for the terminal, and one for the
-/// rat's eye. The eye color alternates between two colors based on the selected row.
-pub fn render_logo(selected_row: usize, area: Rect, buf: &mut Buffer) {
-    let eye_color = if selected_row % 2 == 0 {
-        THEME.logo.rat_eye
-    } else {
-        THEME.logo.rat_eye_alt
-    };
-    let area = area.inner(&Margin {
-        vertical: 0,
-        horizontal: 2,
-    });
-    for (y, (line1, line2)) in BRONTES_LOGO.iter().tuples().enumerate() {
-        for (x, (ch1, ch2)) in line1.chars().zip(line2.chars()).enumerate() {
-            let x = area.left() + x as u16;
-            let y = area.top() + y as u16;
-            let cell = buf.get_mut(x, y);
-            let rat_color = THEME.logo.rat;
-            let term_color = THEME.logo.term;
-            match (ch1, ch2) {
-                ('█', '█') => {
-                    cell.set_char('█');
-                    cell.fg = rat_color;
-                }
-                ('█', ' ') => {
-                    cell.set_char('▀');
-                    cell.fg = rat_color;
-                }
-                (' ', '█') => {
-                    cell.set_char('▄');
-                    cell.fg = rat_color;
-                }
-                ('█', 'x') => {
-                    cell.set_char('▀');
-                    cell.fg = rat_color;
-                    cell.bg = term_color;
-                }
-                ('x', '█') => {
-                    cell.set_char('▄');
-                    cell.fg = rat_color;
-                    cell.bg = term_color;
-                }
-                ('x', 'x') => {
-                    cell.set_char(' ');
-                    cell.fg = term_color;
-                    cell.bg = term_color;
-                }
-                ('█', 'e') => {
-                    cell.set_char('▀');
-                    cell.fg = rat_color;
-                    cell.bg = eye_color;
-                }
-                ('e', '█') => {
-                    cell.set_char('▄');
-                    cell.fg = rat_color;
-                    cell.bg = eye_color;
-                }
-                (_, _) => {}
-            };
-        }
-    }
 }

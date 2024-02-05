@@ -4,7 +4,10 @@ use anyhow::{Context, Result};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::Rect;
 
+use crate::banner::print_banner;
 use crate::{Root, Term};
+use crate::misc::banner;
+use std::thread::sleep;
 
 #[derive(Debug)]
 pub struct App {
@@ -21,6 +24,9 @@ pub struct AppContext {
 
 impl App {
     fn new() -> Result<Self> {
+        print_banner();
+        sleep(Duration::from_secs(2));  
+
         Ok(Self {
             term: Term::start()?,
             should_quit: false,

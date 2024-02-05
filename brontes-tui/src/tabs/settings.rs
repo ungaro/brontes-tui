@@ -203,7 +203,7 @@ impl Widget for SettingsTab {
         });
         Clear.render(area, buf);
         Block::new()
-            .title("Ratatouille Recipe".bold().white())
+            .title("Brontes Settings".bold().white())
             .title_alignment(Alignment::Center)
             .style(THEME.content)
             .padding(Padding::new(1, 1, 2, 1))
@@ -226,7 +226,7 @@ impl Widget for SettingsTab {
 
 
 fn render_variables(widget: &mut SettingsTab, area: Rect, buf: &mut Buffer) {
-
+/*
     let (msg, style) = match widget.input_mode {
         InputMode::Normal => (
             vec![
@@ -267,19 +267,19 @@ fn render_variables(widget: &mut SettingsTab, area: Rect, buf: &mut Buffer) {
         InputMode::Normal =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
-/*
+
         InputMode::Editing => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after
             // rendering
-            f.set_cursor(
+            widget.set_cursor(
                 // Draw the cursor at the current position in the input field.
                 // This position is can be controlled via the left and right arrow key
-               area.x + app.cursor_position as u16 + 1,
+               area.x + widget.cursor_position as u16 + 1,
                 // Move one line down, from the border to the input line
                 area.y + 1,
             )
         }
-*/
+
 
 
     }
@@ -298,6 +298,6 @@ fn render_variables(widget: &mut SettingsTab, area: Rect, buf: &mut Buffer) {
     //messages.render(area, buf, state)
     //f.render_widget(messages, chunks[2]);
 
-
+*/
 }
 

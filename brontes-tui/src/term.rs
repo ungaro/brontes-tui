@@ -3,7 +3,6 @@ use std::{
     ops::{Deref, DerefMut},
     time::Duration,
 };
-
 use anyhow::{Context, Result};
 use crossterm::{
     event::{self, Event},
