@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use anyhow::Result;
 pub use app::*;
 pub use colors::*;

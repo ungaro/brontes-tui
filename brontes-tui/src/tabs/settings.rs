@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 use itertools::Itertools;
 use ratatui::{prelude::*, widgets::*};
 

@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 use std::borrow::BorrowMut;
 
 use lazy_static::lazy_static;
