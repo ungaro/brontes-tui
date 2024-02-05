@@ -3,96 +3,193 @@ use ratatui::{prelude::*, widgets::*};
 
 use crate::{layout, RgbSwatch, THEME};
 
+#[derive(Debug, Default, Clone)]
+struct Protocol {
+    name: &'static str,
+    mevtypes: Vec<MevType>,
+}
+
 #[derive(Debug, Default, Clone, Copy)]
-struct Ingredient {
-    quantity: &'static str,
+struct MevType{
     name: &'static str,
 }
 
-impl Ingredient {
-    fn height(&self) -> u16 {
-        self.name.lines().count() as u16
-    }
+#[derive(Debug, Clone, Copy)]
+enum InputMode {
+    Normal,
+    Editing,
 }
 
-impl<'a> From<Ingredient> for Row<'a> {
-    fn from(i: Ingredient) -> Self {
-        Row::new(vec![i.quantity, i.name]).height(i.height())
-    }
-}
 
-// https://www.realsimple.com/food-recipes/browse-all-recipes/ratatouille
-const RECIPE: &[(&str, &str)] = &[
-    (
-        "Step 1: ",
-        "Over medium-low heat, add the oil to a large skillet with the onion, garlic, and bay \
-        leaf, stirring occasionally, until the onion has softened.",
-    ),
-    (
-        "Step 2: ",
-        "Add the eggplant and cook, stirring occasionally, for 8 minutes or until the eggplant \
-        has softened. Stir in the zucchini, red bell pepper, tomatoes, and salt, and cook over \
-        medium heat, stirring occasionally, for 5 to 7 minutes or until the vegetables are \
-        tender. Stir in the basil and few grinds of pepper to taste.",
-    ),
-];
+/*
 
-const INGREDIENTS: &[Ingredient] = &[
-    Ingredient {
-        quantity: "4 tbsp",
-        name: "olive oil",
-    },
-    Ingredient {
-        quantity: "1",
-        name: "onion thinly sliced",
-    },
-    Ingredient {
-        quantity: "4",
-        name: "cloves garlic\npeeled and sliced",
-    },
-    Ingredient {
-        quantity: "1",
-        name: "small bay leaf",
-    },
-    Ingredient {
-        quantity: "1",
-        name: "small eggplant cut\ninto 1/2 inch cubes",
-    },
-    Ingredient {
-        quantity: "1",
-        name: "small zucchini halved\nlengthwise and cut\ninto thin slices",
-    },
-    Ingredient {
-        quantity: "1",
-        name: "red bell pepper cut\ninto slivers",
-    },
-    Ingredient {
-        quantity: "4",
-        name: "plum tomatoes\ncoarsely chopped",
-    },
-    Ingredient {
-        quantity: "1 tsp",
-        name: "kosher salt",
-    },
-    Ingredient {
-        quantity: "1/4 cup",
-        name: "shredded fresh basil\nleaves",
-    },
-    Ingredient {
-        quantity: "",
-        name: "freshly ground black\npepper",
-    },
-];
+pub mod bundle;
+pub use bundle::*;
+pub mod sandwich;
+pub use sandwich::*;
+pub mod jit;
+pub use jit::*;
+pub mod backrun;
+pub use backrun::*;
+pub mod cex_dex;
+pub use cex_dex::*;
+pub mod liquidation;
+pub use liquidation::*;
+pub mod jit_sandwich;
+pub use jit_sandwich::*;
+pub mod block;
+pub use block::*;
+*/
+
+
+
+
+/*
+
+BRONTES_DB_PATH="/media/alp/blockchain/_node/brontes_data/"
+DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
+
+PROMETHEUS_ENDPOINT_IP="http://127.0.0.1"
+PROMETHEUS_ENDPOINT_PORT="9090"
+
+BRONTES_DB_PATH="/media/alp/blockchain/_node/brontes_data/"
+DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
+ROOT_FOLDER_PATH="/media/alp/blockchain/_node/brontes_db/Database/"
+
+CLICKHOUSE_URL="192.168.1.171"
+CLICKHOUSE_PORT="8123"
+CLICKHOUSE_USER="admin"
+CLICKHOUSE_PASS="YK6Z1rYZ"
+CLICKHOUSE_DATABASE="brontes"
+
+RETH_URL="http://127.0.0.1"
+RETH_PORT="8545"
+RETH_DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
+RETH_WS_URL="ws://127.0.0.1"
+RETH_WS_PORT="8546"
+
+ARKHAM_API_KEY=""
+
+BIGQUERY_PROJECT_ID=""
+BIGQUERY_SA_FILE=""
+BIGQUERY_DC_FILE=""
+
+TARDIS_API_KEY=""
+
+CEX_BINANCE_S3_URL=""
+
+ETHERSCAN_API_KEY="IXH6AE5PJPG28H3U7UFP64YV3FG19W3FVD"
+
+*/
+
+
+
 
 #[derive(Debug)]
 pub struct SettingsTab {
     selected_row: usize,
+    protocols: Vec<Protocol>,
+    messages: Vec<String>,
+     /// Current value of the input box
+     input: String,
+     /// Position of cursor in the editor area.
+     cursor_position: usize,
+     /// Current input mode
+     input_mode: InputMode,
+
 }
 
 impl SettingsTab {
     pub fn new(selected_row: usize) -> Self {
         Self {
-            selected_row: selected_row % INGREDIENTS.len(),
+            selected_row: selected_row ,
+            input: String::new(),
+            input_mode: InputMode::Normal,
+            messages: Vec::new(),
+            cursor_position: 0,
+            protocols: vec![Protocol{
+                name: "AaveV2Pool",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "AaveV3Pool",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "Curve",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "MakerPSM",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "PancakeSwapV3",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "SushiSwapV2",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "SushiSwapV3",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "UniswapV2",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+                Protocol{name: "UniswapV3",
+                mevtypes: vec![
+                    MevType { name: "Sandwich" },
+                    MevType { name: "Jit Sandwich" },
+                    MevType { name: "Cex-Dex" },
+                    MevType { name: "Jit" },
+                    MevType { name: "Atomic Backrun" },
+                    MevType { name: "Liquidation" },
+                ]},
+            ]
         }
     }
 }
@@ -117,7 +214,6 @@ impl Widget for SettingsTab {
             height: area.height - 3,
             ..area
         };
-        render_scrollbar(self.selected_row, scrollbar_area, buf);
 
         let area = area.inner(&Margin {
             horizontal: 2,
@@ -125,46 +221,83 @@ impl Widget for SettingsTab {
         });
         let area = layout(area, Direction::Horizontal, vec![44, 0]);
 
-        render_recipe(area[0], buf);
-        render_ingredients(self.selected_row, area[1], buf);
     }
 }
 
-fn render_recipe(area: Rect, buf: &mut Buffer) {
-    let lines = RECIPE
+
+fn render_variables(widget: &mut SettingsTab, area: Rect, buf: &mut Buffer) {
+
+    let (msg, style) = match widget.input_mode {
+        InputMode::Normal => (
+            vec![
+                "Press ".into(),
+                "q".bold(),
+                " to exit, ".into(),
+                "e".bold(),
+                " to start editing.".bold(),
+            ],
+            Style::default().add_modifier(Modifier::RAPID_BLINK),
+        ),
+        InputMode::Editing => (
+            vec![
+                "Press ".into(),
+                "Esc".bold(),
+                " to stop editing, ".into(),
+                "Enter".bold(),
+                " to record the message".into(),
+            ],
+            Style::default(),
+        ),
+    };
+    let mut text = Text::from(Line::from(msg));
+    text.patch_style(style);
+    let help_message = Paragraph::new(text);
+    help_message.render(area, buf);
+    //f.render_widget(help_message, area);
+
+    let input = Paragraph::new(widget.input.as_str())
+        .style(match widget.input_mode {
+            InputMode::Normal => Style::default(),
+            InputMode::Editing => Style::default().fg(Color::Yellow),
+        })
+        .block(Block::default().borders(Borders::ALL).title("Input"));
+    //f.render_widget(input, chunks[1]);
+    input.render(area, buf);
+    match widget.input_mode {
+        InputMode::Normal =>
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            {}
+/*
+        InputMode::Editing => {
+            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
+            // rendering
+            f.set_cursor(
+                // Draw the cursor at the current position in the input field.
+                // This position is can be controlled via the left and right arrow key
+               area.x + app.cursor_position as u16 + 1,
+                // Move one line down, from the border to the input line
+                area.y + 1,
+            )
+        }
+*/
+
+
+    }
+
+    let messages: Vec<ListItem> = widget
+        .messages
         .iter()
-        .map(|(step, text)| Line::from(vec![step.white().bold(), text.gray()]))
-        .collect_vec();
-    Paragraph::new(lines)
-        .wrap(Wrap { trim: true })
-        .block(Block::new().padding(Padding::new(0, 1, 0, 0)))
-        .render(area, buf);
+        .enumerate()
+        .map(|(i, m)| {
+            let content = Line::from(Span::raw(format!("{i}: {m}")));
+            ListItem::new(content)
+        })
+        .collect();
+    let messages =
+        List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+    //messages.render(area, buf, state)
+    //f.render_widget(messages, chunks[2]);
+
+
 }
 
-fn render_ingredients(selected_row: usize, area: Rect, buf: &mut Buffer) {
-    let mut state = TableState::default().with_selected(Some(selected_row));
-    let rows = INGREDIENTS.iter().map(|&i| i.into()).collect_vec();
-    let theme = THEME.recipe;
-    StatefulWidget::render(
-        Table::new(rows, [Constraint::Length(7), Constraint::Length(30)])
-            .block(Block::new().style(theme.ingredients))
-            .header(Row::new(vec!["Qty", "Ingredient"]).style(theme.ingredients_header))
-            .highlight_style(Style::new().light_yellow()),
-        area,
-        buf,
-        &mut state,
-    );
-}
-
-fn render_scrollbar(position: usize, area: Rect, buf: &mut Buffer) {
-    let mut state = ScrollbarState::default()
-        .content_length(INGREDIENTS.len())
-        .viewport_content_length(6)
-        .position(position);
-    Scrollbar::new(ScrollbarOrientation::VerticalRight)
-        .begin_symbol(None)
-        .end_symbol(None)
-        .track_symbol(None)
-        .thumb_symbol("▐")
-        .render(area, buf, &mut state)
-}

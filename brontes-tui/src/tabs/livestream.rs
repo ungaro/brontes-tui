@@ -70,7 +70,7 @@ lazy_static! {
     ];
 }
 
-const RATATUI_LOGO: [&str; 32] = [
+const BRONTES_LOGO: [&str; 32] = [
     "               ███              ",
     "             ██████             ",
     "            ███████             ",
@@ -539,7 +539,7 @@ fn render_crate_description(area: Rect, buf: &mut Buffer) {
         .render(area, buf);
 }
 
-/// Use half block characters to render a logo based on the RATATUI_LOGO const.
+/// Use half block characters to render a logo based on the BRONTES_LOGO const.
 ///
 /// The logo is rendered in three colors, one for the rat, one for the terminal, and one for the
 /// rat's eye. The eye color alternates between two colors based on the selected row.
@@ -553,7 +553,7 @@ pub fn render_logo(selected_row: usize, area: Rect, buf: &mut Buffer) {
         vertical: 0,
         horizontal: 2,
     });
-    for (y, (line1, line2)) in RATATUI_LOGO.iter().tuples().enumerate() {
+    for (y, (line1, line2)) in BRONTES_LOGO.iter().tuples().enumerate() {
         for (x, (ch1, ch2)) in line1.chars().zip(line2.chars()).enumerate() {
             let x = area.left() + x as u16;
             let y = area.top() + y as u16;
