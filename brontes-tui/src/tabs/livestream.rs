@@ -310,28 +310,12 @@ impl Widget for LiveStreamTab {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
         let area = area.inner(&Margin {
             vertical: 1,
-            horizontal: 4,
+            horizontal: 1,
         });
 
-        let chunks = Layout::default()
-            .constraints([
-                Constraint::Length(9),
-                Constraint::Min(8),
-                Constraint::Length(7),
-            ])
-            .split(area);
 
-        let sub_layout = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-            .split(chunks[0]);
+        draw_livestream(&mut self, area, buf);
 
-        draw_charts(&self, sub_layout[0], buf);
-        draw_leaderboard(&self, sub_layout[1], buf);
-        //draw_events(&self, chunks[1], buf, 1);
-        draw_livestream(&mut self, chunks[1], buf);
-
-        draw_logs(&self, chunks[2], buf, 1);
     }
 }
 
