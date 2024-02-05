@@ -284,8 +284,10 @@ impl Widget for ProtocolsTab {
         let chunks = Layout::default()
             .constraints([
                 Constraint::Length(9),
-                Constraint::Min(8),
-                Constraint::Length(7),
+                Constraint::Length(9),
+                Constraint::Length(9),
+                Constraint::Length(9),
+                Constraint::Length(9),
             ])
             .split(area);
 
@@ -294,18 +296,43 @@ impl Widget for ProtocolsTab {
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(chunks[0]);
 
-        draw_charts(&self, sub_layout[0], buf);
-        draw_leaderboard(&self, sub_layout[1], buf);
-        //draw_events(&self, chunks[1], buf, 1);
-        draw_livestream(&mut self, chunks[1], buf);
+            let sub_layout2 = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(chunks[1]);
 
-        draw_logs(&self, chunks[2], buf, 1);
+            let sub_layout3 = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(chunks[2]);
+
+            let sub_layout4 = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(chunks[3]);
+        let sub_layout5 = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(chunks[4]);
+
+
+        //draw_protocol(&self, sub_layout[0], buf);
+        draw_protocol(&mut self, sub_layout[0], buf,"ALL");
+        draw_protocol(&mut self, sub_layout[1], buf,"AaveV2Pool");
+        draw_protocol(&mut self, sub_layout2[0], buf,"AaveV3Pool");
+        draw_protocol(&mut self, sub_layout2[1], buf,"Curve");
+        draw_protocol(&mut self, sub_layout3[0], buf,"MakerPSM");
+        draw_protocol(&mut self, sub_layout3[1], buf,"PancakeSwapV3");
+        draw_protocol(&mut self, sub_layout4[0], buf,"SushiSwapV2");
+        draw_protocol(&mut self, sub_layout4[1], buf,"SushiSwapV3");
+        draw_protocol(&mut self, sub_layout5[0], buf,"UniSwapV2");
+        draw_protocol(&mut self, sub_layout5[1], buf,"UniSwapV3");
     }
 }
 
 //fn draw_livestream(f: &mut Frame, app: &mut App) {
 
-fn draw_livestream(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer) {
+fn draw_protocol(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer, protocol: &str) {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::DarkGray);
     let header_cells = [
@@ -325,7 +352,7 @@ fn draw_livestream(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer) {
             .unwrap_or(0)
             + 1;
         let cells = item.iter().map(|c| Cell::from(*c));
-        Row::new(cells).height(height as u16).bottom_margin(1)
+        Row::new(cells).height(height as u16).bottom_margin(0)
     });
     let t = Table::new(
         rows,
@@ -341,184 +368,10 @@ fn draw_livestream(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer) {
         ],
     )
     .header(header)
-    .block(Block::default().borders(Borders::ALL).title("Live Stream"))
+    .block(Block::default().borders(Borders::ALL).title(protocol))
     .highlight_style(selected_style)
     .highlight_symbol(">> ");
     //t.render(area, buf, selected_row);
     //f.render_stateful_widget(t, rects[0], &mut app.state);
     ratatui::widgets::StatefulWidget::render(t, area, buf, &mut widget.stream_table_state);
-}
-
-fn draw_logs(widget: &ProtocolsTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
-    let area_width = area.width;
-
-    let s = "Veeeeeeeeeeeeeeeery    loooooooooooooooooong   striiiiiiiiiiiiiiiiiiiiiiiiiing.   ";
-
-    let mut long_line = s.repeat(usize::from(area_width) / s.len() + 4);
-    long_line.push('\n');
-
-    let text = vec![
-            Line::from("2024-01-31T08:28:19.741687Z  INFO brontes: Collected dex prices for block: 18804995"),
-            Line::from("2024-01-31T08:28:19.741702Z  INFO brontes: dex pricing finished".green()),
-            Line::from("2024-01-31T08:28:19.836077Z DEBUG brontes_inspect::cex_dex: No CEX quote found for pair: symbol: IXS, symbol: WETH at exchange: Kucoin".red()),
-            Line::from("2024-01-31T08:28:19.835551Z  INFO brontes: Collected dex prices for block: 18804997"),
-            Line::from(long_line.on_green()),
-            Line::from("This is a line".green().italic()),
-            Line::from(vec![
-                "Masked text: ".into(),
-                Span::styled(
-                    Masked::new("password", '*'),
-                    Style::default().fg(Color::Red),
-                ),
-            ]),
-        ];
-
-    let create_block = |title| {
-        Block::default()
-            .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Gray))
-            .title(Span::styled(
-                title,
-                Style::default().add_modifier(Modifier::BOLD),
-            ))
-    };
-
-    let paragraph = Paragraph::new(text)
-        .style(Style::default().fg(Color::Gray))
-        .block(create_block("LOGS"))
-        .alignment(Alignment::Left)
-        .wrap(Wrap { trim: true })
-        .scroll((widget.log_scroll, 0));
-    paragraph.render(area, buf);
-
-}
-
-fn draw_events(widget: &ProtocolsTab, area: Rect, buf: &mut Buffer, selected_row: usize) {
-    let mut state = ListState::default().with_selected(Some(selected_row));
-
-    let events: Vec<ListItem> = widget
-        .events
-        .iter()
-        .rev()
-        .map(|&(event, blocknumber, tokens, profit, cost)| {
-            // Colorcode the level depending on its type
-            let s = match event {
-                "Atomic Backrun" => Style::default().fg(Color::Red),
-                "ERROR" => Style::default().fg(Color::Magenta),
-                "WARNING" => Style::default().fg(Color::Yellow),
-                "INFO" => Style::default().fg(Color::Blue),
-                _ => Style::default(),
-            };
-
-            // Add a example datetime and apply proper spacing between them
-            let header = Line::from(vec![
-                Span::styled(format!("{tokens:<9}"), s),
-                " ".into(),
-                "2020-01-01 10:00:00".italic(),
-            ]);
-
-            // The event gets its own line
-            let log = Line::from(vec![event.into()]);
-
-            // Here several things happen:
-            // 1. Add a `---` spacing line above the final list entry
-            // 2. Add the Level + datetime
-            // 3. Add a spacer line
-            // 4. Add the actual event
-            ListItem::new(vec![
-                Line::from("-".repeat(area.width as usize)),
-                header,
-                Line::from(""),
-                log,
-            ])
-        })
-        .collect();
-    let events_list = List::new(events)
-        .block(Block::default().borders(Borders::ALL).title("Live Stream"))
-        .direction(ListDirection::BottomToTop);
-
-    ratatui::widgets::StatefulWidget::render(events_list, area, buf, &mut state);
-    //ratatui::widgets::Widget::render(events_list, area, buf, state)`
-
-    //events_list.render(area,buf,state);
-    //f.render_widget(events_list, chunks[1]);
-
-    //events_list.render(area, buf);
-}
-
-fn draw_charts(widget: &ProtocolsTab, area: Rect, buf: &mut Buffer) {
-    let barchart = BarChart::default()
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title("Performance of MEV Types"),
-        )
-        .data(&widget.data)
-        .bar_width(1)
-        .bar_gap(0)
-        .bar_set(symbols::bar::NINE_LEVELS)
-        .value_style(
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Green)
-                .add_modifier(Modifier::ITALIC),
-        )
-        .direction(Direction::Horizontal)
-        .label_style(Style::default().fg(Color::Yellow))
-        .bar_style(Style::default().fg(Color::Green));
-    barchart.render(area, buf);
-}
-
-fn draw_leaderboard(widget: &ProtocolsTab, area: Rect, buf: &mut Buffer) {
-    let barchart = BarChart::default()
-        .block(Block::default().borders(Borders::ALL).title("Leaderboard"))
-        //.data(&widget.leaderboard.iter().map(|x| (x[0], x[1].parse().unwrap())).collect::<Vec<_>>())
-        .data(&widget.leaderboard)
-        .bar_width(1)
-        .bar_gap(0)
-        .bar_set(symbols::bar::NINE_LEVELS)
-        .value_style(
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Green)
-                .add_modifier(Modifier::ITALIC),
-        )
-        .direction(Direction::Horizontal)
-        .label_style(Style::default().fg(Color::Yellow))
-        .bar_style(Style::default().fg(Color::Green));
-    barchart.render(area, buf);
-}
-
-fn render_crate_description(area: Rect, buf: &mut Buffer) {
-    let area = area.inner(
-        &(Margin {
-            vertical: 4,
-            horizontal: 2,
-        }),
-    );
-    Clear.render(area, buf); // clear out the color swatches
-    Block::new().style(THEME.content).render(area, buf);
-    let area = area.inner(
-        &(Margin {
-            vertical: 1,
-            horizontal: 2,
-        }),
-    );
-    let text = "- cooking up terminal user interfaces -
-
-    Ratatui is a Rust crate that provides widgets (e.g. Paragraph, Table) and draws them to the \
-    screen efficiently every frame.";
-    Paragraph::new(text)
-        .style(THEME.description)
-        .block(
-            Block::new()
-                .title(" Ratatui ")
-                .title_alignment(Alignment::Center)
-                .borders(Borders::TOP)
-                .border_style(THEME.description_title)
-                .padding(Padding::new(0, 0, 0, 0)),
-        )
-        .wrap(Wrap { trim: true })
-        .scroll((0, 0))
-        .render(area, buf);
 }

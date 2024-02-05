@@ -33,6 +33,7 @@ palette = "0.7.3"
 better-panic = "0.3.0"
 lazy_static = "1.4.0"
 tui-textarea = "0.4.0"
+tui-nodes = "0.3.1"
 
 [dev-dependencies]
 anyhow = "1.0.71"

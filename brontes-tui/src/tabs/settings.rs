@@ -21,68 +21,6 @@ enum InputMode {
 }
 
 
-/*
-
-pub mod bundle;
-pub use bundle::*;
-pub mod sandwich;
-pub use sandwich::*;
-pub mod jit;
-pub use jit::*;
-pub mod backrun;
-pub use backrun::*;
-pub mod cex_dex;
-pub use cex_dex::*;
-pub mod liquidation;
-pub use liquidation::*;
-pub mod jit_sandwich;
-pub use jit_sandwich::*;
-pub mod block;
-pub use block::*;
-*/
-
-
-
-
-/*
-
-BRONTES_DB_PATH="/media/alp/blockchain/_node/brontes_data/"
-DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
-
-PROMETHEUS_ENDPOINT_IP="http://127.0.0.1"
-PROMETHEUS_ENDPOINT_PORT="9090"
-
-BRONTES_DB_PATH="/media/alp/blockchain/_node/brontes_data/"
-DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
-ROOT_FOLDER_PATH="/media/alp/blockchain/_node/brontes_db/Database/"
-
-CLICKHOUSE_URL="192.168.1.171"
-CLICKHOUSE_PORT="8123"
-CLICKHOUSE_USER="admin"
-CLICKHOUSE_PASS="YK6Z1rYZ"
-CLICKHOUSE_DATABASE="brontes"
-
-RETH_URL="http://127.0.0.1"
-RETH_PORT="8545"
-RETH_DB_PATH="/media/alp/blockchain/_node/reth_data/db/"
-RETH_WS_URL="ws://127.0.0.1"
-RETH_WS_PORT="8546"
-
-ARKHAM_API_KEY=""
-
-BIGQUERY_PROJECT_ID=""
-BIGQUERY_SA_FILE=""
-BIGQUERY_DC_FILE=""
-
-TARDIS_API_KEY=""
-
-CEX_BINANCE_S3_URL=""
-
-ETHERSCAN_API_KEY="IXH6AE5PJPG28H3U7UFP64YV3FG19W3FVD"
-
-*/
-
-
 
 
 #[derive(Debug)]
