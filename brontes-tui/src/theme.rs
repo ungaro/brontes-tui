@@ -1,5 +1,8 @@
 use ratatui::prelude::*;
 
+//TODO: Clean this file up
+
+
 pub struct Theme {
     pub root: Style,
     pub content: Style,

@@ -344,8 +344,6 @@ fn draw_livestream(widget: &mut DashboardTab, area: Rect, buf: &mut Buffer) {
     .block(Block::default().borders(Borders::ALL).title("Live Stream"))
     .highlight_style(selected_style)
     .highlight_symbol(">> ");
-    //t.render(area, buf, selected_row);
-    //f.render_stateful_widget(t, rects[0], &mut app.state);
     ratatui::widgets::StatefulWidget::render(t, area, buf, &mut widget.stream_table_state);
 }
 
@@ -438,12 +436,7 @@ fn draw_events(widget: &DashboardTab, area: Rect, buf: &mut Buffer, selected_row
         .direction(ListDirection::BottomToTop);
 
     ratatui::widgets::StatefulWidget::render(events_list, area, buf, &mut state);
-    //ratatui::widgets::Widget::render(events_list, area, buf, state)`
 
-    //events_list.render(area,buf,state);
-    //f.render_widget(events_list, chunks[1]);
-
-    //events_list.render(area, buf);
 }
 
 fn draw_charts(widget: &DashboardTab, area: Rect, buf: &mut Buffer) {

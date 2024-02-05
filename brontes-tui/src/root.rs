@@ -47,8 +47,6 @@ impl Root<'_> {
             2 => ProtocolsTab::new(row_index).render(area, buf),
             3 => TokensTab::new(row_index).render(area, buf),
             4 => SettingsTab::new(row_index).render(area, buf),
-            //5 => NotificationsTab::new(row_index).render(area, buf),
-//            4 => WeatherTab::new(row_index).render(area, buf),
             _ => unreachable!(),
         };
     }

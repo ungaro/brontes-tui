@@ -82,10 +82,7 @@ pub struct ProtocolsTab {
     log_scroll: u16,
     items: Vec<Vec<&'static str>>,
     stream_table_state: TableState,
-    //leaderboard: Vec<Vec<&'static str>>,
     leaderboard: Vec<(&'static str, u64)>,
-
-    //    events: Vec<(&'static str, &'static str,)>,
     events: Vec<(
         &'static str,
         &'static str,
@@ -93,7 +90,6 @@ pub struct ProtocolsTab {
         &'static str,
         &'static str,
     )>,
-    //pub barchart: Vec<(&'a str, u64)>,
 }
 
 impl ProtocolsTab {
@@ -318,8 +314,6 @@ impl Widget for ProtocolsTab {
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(chunks[4]);
 
-
-        //draw_protocol(&self, sub_layout[0], buf);
         draw_protocol(&mut self, sub_layout[0], buf,"ALL");
         draw_protocol(&mut self, sub_layout[1], buf,"AaveV2Pool");
         draw_protocol(&mut self, sub_layout2[0], buf,"AaveV3Pool");
@@ -333,7 +327,6 @@ impl Widget for ProtocolsTab {
     }
 }
 
-//fn draw_livestream(f: &mut Frame, app: &mut App) {
 
 fn draw_protocol(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer, protocol: &str) {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
@@ -374,7 +367,6 @@ fn draw_protocol(widget: &mut ProtocolsTab, area: Rect, buf: &mut Buffer, protoc
     .block(Block::default().borders(Borders::ALL).title(protocol))
     .highlight_style(selected_style)
     .highlight_symbol(">> ");
-    //t.render(area, buf, selected_row);
-    //f.render_stateful_widget(t, rects[0], &mut app.state);
+
     ratatui::widgets::StatefulWidget::render(t, area, buf, &mut widget.stream_table_state);
 }

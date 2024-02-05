@@ -81,10 +81,7 @@ pub struct TokensTab {
     log_scroll: u16,
     items: Vec<Vec<&'static str>>,
     stream_table_state: TableState,
-    //leaderboard: Vec<Vec<&'static str>>,
     leaderboard: Vec<(&'static str, u64)>,
-
-    //    events: Vec<(&'static str, &'static str,)>,
     events: Vec<(
         &'static str,
         &'static str,
@@ -92,7 +89,6 @@ pub struct TokensTab {
         &'static str,
         &'static str,
     )>,
-    //pub barchart: Vec<(&'a str, u64)>,
 }
 
 impl TokensTab {
